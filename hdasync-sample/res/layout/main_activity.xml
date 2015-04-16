@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/mainContainer"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <Button
+            android:id="@+id/test_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test"
+            />
+
+    <Button
+            android:id="@+id/test_button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test2"
+            />
+
+    <Button
+            android:id="@+id/test_qzlock"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test_qzlock"
+            />
+
+    <Button
+            android:id="@+id/test_alarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test_alarm"
+            />
+
+    <Button
+            android:id="@+id/load_plugin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="load_plugin"
+            />
+
+    <Button
+            android:id="@+id/load_particle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="load_particle"
+            />
+
+    <Button
+            android:id="@+id/test_bullet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test_bullet"
+            />
+
+    <Button
+            android:id="@+id/test_zip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="test_zip"
+            />
+
+</LinearLayout>
