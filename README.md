@@ -25,7 +25,7 @@ public class SampleActivity extends Activity {
 
     hdAsync = new HdAsync<SampleActivity>(this);
 
-    hdAsync.ready().both(new HdAsyncAction(Looper.getMainLooper()) {
+    hdAsync.both(new HdAsyncAction(Looper.getMainLooper()) {
       @Override
       public HdAsyncResult call(HdAsyncArgs args) {
         initView();
