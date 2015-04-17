@@ -1,4 +1,4 @@
-package com.sample;
+package com.hdasync.sample;
 
 import android.app.Activity;
 import android.graphics.Color;
@@ -8,11 +8,12 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+
 import com.hdasync.HdAsync;
 import com.hdasync.HdAsyncAction;
 import com.hdasync.HdAsyncArgs;
 import com.hdasync.HdAsyncResult;
-import com.hdasync.sample.R;
+import com.hdasync.R;
 
 import java.lang.ref.WeakReference;
 
