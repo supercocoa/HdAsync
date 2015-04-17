@@ -12,9 +12,25 @@
 *  可以通过`传递/返回`HdAsync，将自己的异步操作交给别的调用者来组合或调用。
 *  通过`弱引用`与`静态内部类`以及`生命周期`的控制，最大化的降低内存泄露的可能。
 
+#HdAsync
+
+**A android asynchronous communication library based on Handler
+ 
+`HandlerThread/Handler` emebed in Andorid framework makes UI thread and background thread communication easily.But when chained or hierarchical invoke happens,callbak logic is harder to handle.It turns out to be either callback inside callback or original  "continuous" logic being divided into a mess. Meanwhile because callback usually implemented as a innner static class which is likely leading to memory leak in Android enviroment.
+
+`HdAync` is not a standanlone lib,it depends on handler and encapsulate some functions below:
+*Refrencing common used `promise-future` modle in async communication,HdAsync can combine chained or hierachical invoke as easily as you can image.On the coding level,this lib can shorten the 'logical distance' between asyncronous invokes.Though there is still a gap in achieving the effect of coroutine in some language, this libwill make  callback constucion as `compack` as possible.
+*Instead of providing a thread to execute the code explicitly, choose a looper at every single step in chains, HdAync will do the rest for you and accomplish the whole combined task between different thread.
+*User can choose whether connitue the task or not after a step finished.
+*HdAsync can be returned or transfered to another caller to be combined or invoked.
+*Through  mthods as  `weak reference`,`static innner class` and `lifecycle` management HdAsync minimize the posibility of memory leak.
+
 ## For example
 
 轻松异步初始化Activity
+
+Initialize a synchronous Activity
+
 ``` Java
 public class SampleActivity extends Activity {
 
@@ -58,6 +74,7 @@ public class SampleActivity extends Activity {
 ## Quick Start
 
 ### 异步链
+### Asynchronous chain
 ``` Java
 hdAsync = new HdAsync<SampleActivity>(this);
 
@@ -94,8 +111,8 @@ hdAsync.call(); //真正开始调用
 
 ### 内存问题
 #### 短时操作
-
 对于短时操作，为了便于编写，可以简单的借助组件本身的生命周期或在必要的时候来销毁异步链，从而避免内存泄露
+
 ``` Java
 public class SampleActivity extends Activity {
 
