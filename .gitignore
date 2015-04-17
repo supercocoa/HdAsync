@@ -27,6 +27,10 @@ proguard/
 *.log
 
 .DS_Store
-.idea/
+
+#intellij files
+/.idea/workspace.xml
+/.idea/libraries
+
 out/
 *.iml
