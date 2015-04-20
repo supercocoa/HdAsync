@@ -72,12 +72,12 @@ public class SampleActivity extends Activity {
     protected void onDestroy() {
 
         if (hdAsync != null) {
-            hdAsync.destory();
+            hdAsync.destroy();
             hdAsync = null;
         }
 
         if (hdAsync2 != null) {
-            hdAsync2.destory();
+            hdAsync2.destroy();
             hdAsync2 = null;
         }
 
