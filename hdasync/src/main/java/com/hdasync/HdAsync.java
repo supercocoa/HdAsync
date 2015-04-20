@@ -74,7 +74,7 @@ public class HdAsync<T> {
         return isDone;
     }
 
-    public void destory() {
+    public void destroy() {
         cancel();
         if (actionGroup != null) {
             actionGroup.clear();
