@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="gen">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../hdasync/gen" />
+      <root url="file://$PROJECT_DIR$/../hdasync/src" />
+    </SOURCES>
+  </library>
+</component>
