@@ -120,7 +120,7 @@ public class SampleActivity extends Activity {
                     if ((Boolean) args.getValue()) {
                         SampleActivity activity = getHost();
                         if (activity != null) {
-                            activity.container.setBackground(null);
+                            activity.container.setBackgroundColor(Color.TRANSPARENT);
                         }
                     }
                     args.setValue(false);
