@@ -1,5 +1,6 @@
 package com.hdasync;
 
+import android.util.Log;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,9 +30,10 @@ public class HdAsyncTest {
     }
 
     @Test
-    public void testDebug() throws Exception {
+    public void asyncTst() throws Exception {
         when(hdAsync.append(null)).thenReturn(null);
         verify(hdAsync).append(null);
+        Log.d("HdAsyncTest", "testAsync");
     }
 
 }
