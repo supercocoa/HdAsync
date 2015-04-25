@@ -4,7 +4,7 @@
 
 `HandlerThread/Handler` emebed in Andorid framework makes UI thread and background thread communication easily.But when chained or hierarchical invoke happens,callbak logic is harder to handle.It turns out to be either callback inside callback or original  "continuous" logic being divided into a mess. Meanwhile because callback usually implemented as a innner static class which is likely leading to memory leak in Android enviroment.
 
-`HdAync` is not a standanlone lib,it depends on handler and encapsulate some functions below:
+`HdAsync` is not a standanlone lib,it depends on handler and encapsulate some functions below:
 * Refrencing common used `promise-future` modle in async communication,HdAsync can combine chained or hierachical invoke as easily as you can image.On the coding level,this lib can shorten the 'logical distance' between asyncronous invokes.Though there is still a gap in achieving the effect of coroutine in some language, this libwill make  callback constucion as `compack` as possible.
 * Instead of providing a thread to execute the code explicitly, choose a looper at every single step in chains, HdAync will do the rest for you and accomplish the whole combined task between different thread.
 * User can choose whether connitue the task or not after a step finished.
