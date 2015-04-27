@@ -57,7 +57,6 @@ public class HdAsync {
 
     public void cancel() {
         isCanceled = true;
-        isDone = true;
     }
 
     public boolean isDone() {
@@ -65,7 +64,6 @@ public class HdAsync {
     }
 
     public void destroy() {
-        cancel();
         if (actionGroup != null) {
             actionGroup.clear();
         }
@@ -104,15 +102,16 @@ public class HdAsync {
     private void executeAction(HdAsyncArgs args, boolean needNext) {
         if (actionGroup != null && !actionGroup.allActionFinish()) {
 
-            if (!needNext) {
+            if (!needNext || isCanceled) {
                 return;
             }
 
             HdAsyncAction[] actions = actionGroup.poll();
 
             for (HdAsyncAction action : actions) {
+
                 if (action.looper == null) {
-                    Log.d(TAG, "action.looper  = null");
+                    continue;
                 }
 
                 Handler handler = new Handler(action.looper, new HandlerCallback());
@@ -126,11 +125,11 @@ public class HdAsync {
                 } else {
                     handler.sendMessageDelayed(msg, action.delay);
                 }
-
             }
 
         } else {
             isDone = true;
+            destroy();
             Log.d(TAG, "isDone");
         }
     }
@@ -146,14 +145,8 @@ public class HdAsync {
 
             Data data = (Data) message.obj;
 
-
             HdAsyncAction action = data.action;
             HdAsyncArgs args = data.args;
-
-
-            if (isCanceled) {
-                return false;
-            }
 
             HdAsyncResult result = action.call(args);
 
