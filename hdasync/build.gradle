@@ -1,16 +1,6 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.1'
-    }
-}
 apply plugin: 'com.android.library'
-
-repositories {
-    jcenter()
-}
+apply plugin: 'maven'
+apply plugin: 'org.robolectric'
 
 android {
     compileSdkVersion 22
@@ -37,5 +27,21 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile "com.android.support:appcompat-v7:${APPCOMPAT_V7_VERSION}"
+
+    androidTestCompile "org.apache.maven:maven-ant-tasks:${MAVEN_ANT_TASKS}"
+    androidTestCompile "junit:junit:${JUNIT_VERSION}"
+    androidTestCompile "org.mockito:mockito-core:${MOCKITO_CORE_VERSION}"
+    androidTestCompile("org.robolectric:robolectric:${ROBOLECTRIC_VERSION}") {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
+
+    testCompile "org.apache.maven:maven-ant-tasks:${MAVEN_ANT_TASKS}"
+    testCompile "junit:junit:${JUNIT_VERSION}"
+    testCompile "org.mockito:mockito-core:${MOCKITO_CORE_VERSION}"
+    testCompile("org.robolectric:robolectric:${ROBOLECTRIC_VERSION}") {
+        exclude group: 'commons-logging', module: 'commons-logging'
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
 }
