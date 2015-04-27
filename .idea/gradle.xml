@@ -5,15 +5,8 @@
       <GradleProjectSettings>
         <option name="distributionType" value="LOCAL" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="/usr/local/Cellar/gradle/2.3/libexec" />
-        <option name="gradleJvm" value="1.7" />
-        <option name="modules">
-          <set>
-            <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/hdasync" />
-            <option value="$PROJECT_DIR$/hdasync-sample" />
-          </set>
-        </option>
+        <option name="gradleHome" value="/usr/local/Cellar/gradle/2.2.1/libexec" />
+        <option name="gradleJvm" value="1.8" />
       </GradleProjectSettings>
     </option>
   </component>

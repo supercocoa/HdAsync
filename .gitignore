@@ -29,8 +29,9 @@ proguard/
 .DS_Store
 
 #intellij files
-/.idea/workspace.xml
-/.idea/libraries
+.idea
 
 out/
 *.iml
+
+gradle.properties
