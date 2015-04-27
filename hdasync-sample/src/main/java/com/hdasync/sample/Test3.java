@@ -13,39 +13,28 @@ import com.hdasync.HdAsyncResult;
 public class Test3 {
 
     public HdAsync test(final IAsyncTest asyncTest, Looper backgroundLooper) {
-        return new StaticHdAsync(this, asyncTest, backgroundLooper);
+        return HdAsyncHolder.create(this, asyncTest, backgroundLooper);
     }
 
+    static class HdAsyncHolder {
+        public static HdAsync create(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
+            return HdAsync.with(host)
+                    .then(new HdAsyncAction(backgroundLooper) {
+                        @Override
+                        public HdAsyncResult call(HdAsyncArgs args) {
+                            Log.d(HdAsync.TAG, "test3 start");
 
-    static class StaticHdAsync extends HdAsync<Test3> {
-
-        IAsyncTest asyncTest;
-        Looper backgroundLooper;
-
-        public StaticHdAsync(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
-            super(host);
-            this.asyncTest = asyncTest;
-            this.backgroundLooper = backgroundLooper;
-        }
-
-        @Override
-        public void ready() {
-            super.ready();
-            then(new HdAsyncAction(backgroundLooper) {
-                @Override
-                public HdAsyncResult call(HdAsyncArgs args) {
-                    Log.d(HdAsync.TAG, "test3 start");
-
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    asyncTest.onSuccess();
-                    return args.doNext(true);
-                }
-            });
+                            try {
+                                Thread.sleep(2000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            asyncTest.onSuccess();
+                            return args.doNext(true);
+                        }
+                    });
 
         }
     }
+
 }

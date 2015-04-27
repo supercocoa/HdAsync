@@ -10,59 +10,49 @@ import java.lang.ref.WeakReference;
 /**
  * Created by scott on 15/3/26.
  */
-public class HdAsync<T> {
+public class HdAsync {
 
     public static final String TAG = "HdAsync";
 
     private HdAsyncArgs args;
     private HdAsyncActionGroup actionGroup;
 
-    private boolean isReady = false;
     private boolean isCanceled = false;
     private boolean isDone = false;
 
-    protected WeakReference<T> weakHost;
+    public static HdAsync with(Object host) {
+        return new HdAsync(host);
+    }
 
-    public HdAsync(T host) {
-        weakHost = new WeakReference<T>(host);
+    private HdAsync(Object host) {
         actionGroup = new HdAsyncActionGroup();
         args = new HdAsyncArgs();
+        args.setHdAsync(this);
+        args.setHost(host);
     }
 
-    protected void ready() {
-        isReady = true;
-    }
 
-    public T getHost() {
-        if (weakHost != null) {
-            return weakHost.get();
-        }
-        return null;
-    }
-
-    public void call() {
-        if (!isReady) {
-            ready();
-        }
+    public HdAsync call() {
         isCanceled = false;
-        executeAction(this, args, true);
+        executeAction(args, true);
+        return this;
     }
 
-    public void call(HdAsyncArgs args) {
-        if (!isReady) {
-            ready();
-        }
+    public HdAsync call(HdAsyncArgs args) {
         isCanceled = false;
         this.args = args;
-        executeAction(this, args, true);
+        executeAction(args, true);
+        return this;
     }
 
-    public void resume() {
+    public HdAsync resume() {
         call();
+        return this;
     }
 
-    public void resume(HdAsyncArgs args) {
+    public HdAsync resume(HdAsyncArgs args) {
         call(args);
+        return this;
     }
 
     public void cancel() {
@@ -100,9 +90,6 @@ public class HdAsync<T> {
 
     public HdAsync append(HdAsync other) {
         if (other != null) {
-            if (!other.isReady) {
-                other.ready();
-            }
             actionGroup.append(other.actionGroup);
         }
         return this;
@@ -110,26 +97,28 @@ public class HdAsync<T> {
 
 
     static class Data {
-        WeakReference<HdAsync> weakAsync;
-        WeakReference<HdAsyncAction> weakAction;
+        HdAsyncAction action;
         HdAsyncArgs args;
     }
 
-    private static void executeAction(HdAsync hdAsync, HdAsyncArgs args, boolean needNext) {
-        if (hdAsync.actionGroup != null && !hdAsync.actionGroup.allActionFinish()) {
+    private void executeAction(HdAsyncArgs args, boolean needNext) {
+        if (actionGroup != null && !actionGroup.allActionFinish()) {
 
             if (!needNext) {
                 return;
             }
 
-            HdAsyncAction[] actions = hdAsync.actionGroup.poll();
+            HdAsyncAction[] actions = actionGroup.poll();
 
             for (HdAsyncAction action : actions) {
+                if (action.looper == null) {
+                    Log.d(TAG, "action.looper  = null");
+                }
+
                 Handler handler = new Handler(action.looper, new HandlerCallback());
                 Message msg = Message.obtain();
                 Data data = new Data();
-                data.weakAsync = new WeakReference<HdAsync>(hdAsync);
-                data.weakAction = new WeakReference<HdAsyncAction>(action);
+                data.action = action;
                 data.args = args;
                 msg.obj = data;
                 if (action.delay == 0) {
@@ -141,13 +130,13 @@ public class HdAsync<T> {
             }
 
         } else {
-            hdAsync.isDone = true;
+            isDone = true;
             Log.d(TAG, "isDone");
         }
     }
 
 
-    static class HandlerCallback implements Handler.Callback {
+    class HandlerCallback implements Handler.Callback {
 
         @Override
         public boolean handleMessage(Message message) {
@@ -157,28 +146,21 @@ public class HdAsync<T> {
 
             Data data = (Data) message.obj;
 
-            WeakReference<HdAsync> weakAsync = data.weakAsync;
-            WeakReference<HdAsyncAction> weakAction = data.weakAction;
+
+            HdAsyncAction action = data.action;
             HdAsyncArgs args = data.args;
 
-            if (weakAsync == null || weakAsync.get() == null || weakAction == null || weakAction.get() == null) {
-                return false;
-            }
 
-            HdAsync hdAsync = weakAsync.get();
-
-            HdAsyncAction action = weakAction.get();
-
-            if (hdAsync.isCanceled) {
+            if (isCanceled) {
                 return false;
             }
 
             HdAsyncResult result = action.call(args);
 
-            hdAsync.actionGroup.finishOneAction();
+            actionGroup.finishOneAction();
 
             if (result != null) {
-                executeAction(hdAsync, result.args, result.needNext);
+                executeAction(result.args, result.needNext);
             }
 
             return false;
