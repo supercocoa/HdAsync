@@ -38,14 +38,47 @@ public class SampleActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        initView();
-        bindEvents();
-        initDatas();
+
+        View v = new View(this);
+        v.setBackgroundColor(Color.WHITE);
+        setContentView(v);
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        Log.d(HdAsync.TAG, "onWindowFocusChanged");
 
-    private void initView() {
-        setContentView(R.layout.hdasync_sample_activity);
+        HdAsync.with(this)
+                .then(new HdAsyncAction(backgroundLooper) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "inflate");
+                        View contentView = getLayoutInflater().inflate(R.layout.hdasync_sample_activity, null);
+                        args.setValue(contentView);
+                        return args.doNext(true);
+                    }
+                })
+                .both(new HdAsyncAction(getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "initView");
+                        initView((View) args.getValue());
+                        bindEvents();
+                        return args.doNext(false);
+                    }
+                }, new HdAsyncAction(backgroundLooper) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        initDatas();
+                        return args.doNext(false);
+                    }
+                })
+                .call();
+    }
+
+    private void initView(View contentView) {
+        setContentView(contentView);
         container = findViewById(R.id.container);
         container.setBackgroundColor(Color.parseColor("#00B0FF"));
 
