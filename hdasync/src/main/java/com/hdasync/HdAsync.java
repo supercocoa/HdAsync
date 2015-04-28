@@ -2,7 +2,6 @@ package com.hdasync;
 
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 
 /**
@@ -84,6 +83,11 @@ public class HdAsync {
         return this;
     }
 
+    public HdAsync both(int countDownNum, HdAsyncAction... actions) {
+        actionGroup.both(countDownNum, actions);
+        return this;
+    }
+
     public HdAsync append(HdAsync other) {
         if (other != null) {
             actionGroup.append(other.actionGroup);
@@ -104,7 +108,13 @@ public class HdAsync {
                 return;
             }
 
-            HdAsyncAction[] actions = actionGroup.poll();
+            HdAsyncActionGroup.ActionArray actionArray = actionGroup.poll();
+
+            if (actionArray == null) {
+                return;
+            }
+
+            HdAsyncAction[] actions = actionArray.array;
 
             for (HdAsyncAction action : actions) {
 
@@ -116,7 +126,16 @@ public class HdAsync {
                 Message msg = Message.obtain();
                 Data data = new Data();
                 data.action = action;
-                data.args = args;
+
+                data.args = new HdAsyncArgs();
+                data.args.setHdAsync(args.getHdAsync());
+                data.args.setHost(args.getHost());
+                data.args.setValue(args.getValue());
+
+                if (actionArray.countDownNum != null) {
+                    data.args.setCountDownNum(actionArray.countDownNum);
+                }
+
                 msg.obj = data;
                 if (action.delay == 0) {
                     handler.sendMessage(msg);
@@ -128,7 +147,6 @@ public class HdAsync {
         } else {
             isDone = true;
             destroy();
-            Log.d(TAG, "isDone");
         }
     }
 

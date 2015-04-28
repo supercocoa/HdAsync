@@ -28,6 +28,8 @@ public class SampleActivity extends Activity {
 
     static Looper backgroundLooper;
 
+    boolean hasWindowFocusChanged = false;
+
 
     static {
         HandlerThread handlerThread = new HandlerThread("back", android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -49,6 +51,12 @@ public class SampleActivity extends Activity {
         super.onWindowFocusChanged(hasFocus);
         Log.d(HdAsync.TAG, "onWindowFocusChanged");
 
+        if (hasWindowFocusChanged) {
+            return;
+        }
+
+        hasWindowFocusChanged = true;
+
         HdAsync.with(this)
                 .then(new HdAsyncAction(backgroundLooper) {
                     @Override
@@ -59,18 +67,27 @@ public class SampleActivity extends Activity {
                         return args.doNext(true);
                     }
                 })
-                .both(new HdAsyncAction(getMainLooper()) {
+                .both(1, new HdAsyncAction(getMainLooper()) {
                     @Override
                     public HdAsyncResult call(HdAsyncArgs args) {
                         Log.d(HdAsync.TAG, "initView");
                         initView((View) args.getValue());
                         bindEvents();
-                        return args.doNext(false);
+
+                        return args.doNextByCountDown();
                     }
                 }, new HdAsyncAction(backgroundLooper) {
                     @Override
                     public HdAsyncResult call(HdAsyncArgs args) {
                         initDatas();
+
+                        return args.doNextByCountDown();
+                    }
+                })
+                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "refresh");
                         return args.doNext(false);
                     }
                 })
@@ -200,6 +217,7 @@ public class SampleActivity extends Activity {
                         @Override
                         public HdAsyncResult call(HdAsyncArgs args) {
                             Log.d(HdAsync.TAG, "7");
+
                             return args.doNext(true);
                         }
                     })

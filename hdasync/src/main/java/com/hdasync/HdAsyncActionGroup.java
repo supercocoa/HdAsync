@@ -8,16 +8,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class HdAsyncActionGroup {
 
-    private LinkedList<HdAsyncAction[]> actionList;
+    public class ActionArray {
+        HdAsyncAction[] array;
+        AtomicInteger countDownNum;
+    }
+
+    private LinkedList<ActionArray> actionList;
     private AtomicInteger actionCount;
 
     public HdAsyncActionGroup() {
-        this.actionList = new LinkedList<HdAsyncAction[]>();
+        this.actionList = new LinkedList<ActionArray>();
         this.actionCount = new AtomicInteger(0);
     }
 
 
-    public HdAsyncAction[] poll() {
+    public ActionArray poll() {
         if (!actionList.isEmpty()) {
             return actionList.poll();
         }
@@ -45,22 +50,40 @@ public class HdAsyncActionGroup {
 
     protected void then(final HdAsyncAction action) {
         actionCount.incrementAndGet();
-        HdAsyncAction[] actions = new HdAsyncAction[1];
-        actions[0] = action;
-        actionList.add(actions);
+
+        ActionArray actionArray = new ActionArray();
+        actionArray.array = new HdAsyncAction[1];
+        actionArray.array[0] = action;
+
+        actionList.add(actionArray);
     }
 
     protected void delay(final HdAsyncAction action, long delay) {
         actionCount.incrementAndGet();
         action.delay = delay;
-        HdAsyncAction[] actions = new HdAsyncAction[1];
-        actions[0] = action;
-        actionList.add(actions);
+
+        ActionArray actionArray = new ActionArray();
+        actionArray.array = new HdAsyncAction[1];
+        actionArray.array[0] = action;
+
+        actionList.add(actionArray);
     }
 
     protected void both(HdAsyncAction... actions) {
+        ActionArray actionArray = new ActionArray();
+        actionArray.array = actions;
+
         actionCount.addAndGet(actions.length);
-        actionList.add(actions);
+        actionList.add(actionArray);
+    }
+
+    protected void both(int countDownNum, HdAsyncAction... actions) {
+        ActionArray actionArray = new ActionArray();
+        actionArray.array = actions;
+        actionArray.countDownNum = new AtomicInteger(countDownNum);
+
+        actionCount.addAndGet(actions.length);
+        actionList.add(actionArray);
     }
 
     protected void append(HdAsyncActionGroup group) {

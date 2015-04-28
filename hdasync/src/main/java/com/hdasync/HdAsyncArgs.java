@@ -1,15 +1,18 @@
 package com.hdasync;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by scott on 15/3/26.
  */
 public class HdAsyncArgs {
 
-    protected WeakReference<HdAsync> weakHdAsync;
-    protected WeakReference<Object> weakHost;
-    protected Object object;
+    private WeakReference<HdAsync> weakHdAsync;
+    private WeakReference<Object> weakHost;
+    private Object object;
+
+    private AtomicInteger countDownNum;
 
     public void setHdAsync(HdAsync hdasync) {
         weakHdAsync = new WeakReference<HdAsync>(hdasync);
@@ -41,8 +44,25 @@ public class HdAsyncArgs {
         return object;
     }
 
+    public void setCountDownNum(AtomicInteger countDownNum) {
+        this.countDownNum = countDownNum;
+    }
+
     public HdAsyncResult doNext(boolean needNext) {
         return new HdAsyncResult(needNext, this);
+    }
+
+    public HdAsyncResult doNextByCountDown() {
+        if (countDownNum == null) {
+            return new HdAsyncResult(false, this);
+        }
+
+        if (countDownNum.decrementAndGet() == 0) {
+            return new HdAsyncResult(true, this);
+        } else {
+            return new HdAsyncResult(false, this);
+        }
+
     }
 
 }
