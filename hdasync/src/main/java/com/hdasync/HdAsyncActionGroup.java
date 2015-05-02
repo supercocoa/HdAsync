@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HdAsyncActionGroup {
 
     public class ActionArray {
-        HdAsyncAction[] array;
+        BaseAction[] array;
         AtomicInteger countDownNum;
     }
 
@@ -77,7 +77,7 @@ public class HdAsyncActionGroup {
         actionList.add(actionArray);
     }
 
-    protected void both(int countDownNum, HdAsyncAction... actions) {
+    protected void both(int countDownNum, HdAsyncCountDownAction... actions) {
         ActionArray actionArray = new ActionArray();
         actionArray.array = actions;
         actionArray.countDownNum = new AtomicInteger(countDownNum);

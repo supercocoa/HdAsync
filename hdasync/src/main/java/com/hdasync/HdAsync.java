@@ -83,7 +83,7 @@ public class HdAsync {
         return this;
     }
 
-    public HdAsync both(int countDownNum, HdAsyncAction... actions) {
+    public HdAsync both(int countDownNum, HdAsyncCountDownAction... actions) {
         actionGroup.both(countDownNum, actions);
         return this;
     }
@@ -97,7 +97,7 @@ public class HdAsync {
 
 
     static class Data {
-        HdAsyncAction action;
+        BaseAction action;
         HdAsyncArgs args;
     }
 
@@ -114,9 +114,9 @@ public class HdAsync {
                 return;
             }
 
-            HdAsyncAction[] actions = actionArray.array;
+            BaseAction[] actions = actionArray.array;
 
-            for (HdAsyncAction action : actions) {
+            for (BaseAction action : actions) {
 
                 if (action.looper == null) {
                     continue;
@@ -161,10 +161,10 @@ public class HdAsync {
 
             Data data = (Data) message.obj;
 
-            HdAsyncAction action = data.action;
+            BaseAction action = data.action;
             HdAsyncArgs args = data.args;
 
-            HdAsyncResult result = action.call(args);
+            BaseResult result = action.call(args);
 
             actionGroup.finishOneAction();
 

@@ -11,6 +11,8 @@ import android.widget.TextView;
 import com.hdasync.HdAsync;
 import com.hdasync.HdAsyncAction;
 import com.hdasync.HdAsyncArgs;
+import com.hdasync.HdAsyncCountDownAction;
+import com.hdasync.HdAsyncCountDownResult;
 import com.hdasync.HdAsyncResult;
 import com.hdasync.R;
 
@@ -67,21 +69,26 @@ public class SampleActivity extends Activity {
                         return args.doNext(true);
                     }
                 })
-                .both(1, new HdAsyncAction(getMainLooper()) {
+                .both(1, new HdAsyncCountDownAction(getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(HdAsyncArgs args) {
+                    public HdAsyncCountDownResult call(HdAsyncArgs args) {
                         Log.d(HdAsync.TAG, "initView");
                         initView((View) args.getValue());
                         bindEvents();
 
-                        return args.doNextByCountDown();
+                        return args.doNextByCountDown(true);
                     }
-                }, new HdAsyncAction(backgroundLooper) {
+                }, new HdAsyncCountDownAction(backgroundLooper) {
                     @Override
-                    public HdAsyncResult call(HdAsyncArgs args) {
+                    public HdAsyncCountDownResult call(HdAsyncArgs args) {
                         initDatas();
 
-                        return args.doNextByCountDown();
+                        return args.doNextByCountDown(true);
+                    }
+                }, new HdAsyncCountDownAction(getMainLooper()) {
+                    @Override
+                    public HdAsyncCountDownResult call(HdAsyncArgs args) {
+                        return args.doNextByCountDown(false);
                     }
                 })
                 .then(new HdAsyncAction(Looper.getMainLooper()) {
@@ -129,112 +136,110 @@ public class SampleActivity extends Activity {
 
 
     public void test() {
-        hdAsync = HdAsyncHolder.create(this).call();
+        hdAsync = createTestHdAsync(this).call();
     }
 
 
-    static class HdAsyncHolder {
-        public static HdAsync create(SampleActivity host) {
-            return HdAsync.with(host)
-                    .then(new HdAsyncAction(backgroundLooper) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "1");
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            args.setValue(true);
-                            return args.doNext(true);
+    public static HdAsync createTestHdAsync(SampleActivity host) {
+        return HdAsync.with(host)
+                .then(new HdAsyncAction(backgroundLooper) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "1");
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                    })
-                    .then(new HdAsyncAction(Looper.getMainLooper()) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "2");
-                            if ((Boolean) args.getValue()) {
-                                SampleActivity activity = (SampleActivity) args.getHost();
-                                if (activity != null) {
-                                    activity.container.setBackgroundColor(Color.TRANSPARENT);
-                                }
-                            }
-                            args.setValue(false);
-                            return args.doNext(true);
-                        }
-                    })
-                    .then(new HdAsyncAction(Looper.getMainLooper()) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "3");
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            return args.doNext(true);
-                        }
-                    })
-                    .then(new HdAsyncAction(Looper.getMainLooper()) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "4");
-                            if (!(Boolean) args.getValue()) {
-                                SampleActivity activity = (SampleActivity) args.getHost();
-                                if (activity != null) {
-                                    activity.container.setBackgroundColor(Color.parseColor("#4CAF50"));
-                                }
-                            }
-                            args.setValue(false);
-                            return args.doNext(true);
-                        }
-                    })
-                    .then(new HdAsyncAction(backgroundLooper) {
-                        @Override
-                        public HdAsyncResult call(final HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "5");
-
-                            SampleActivity activity = (SampleActivity) args.getHost();
-                            if (activity != null && args.getHdAsync() != null) {
-                                activity.test2(new AsynTestClass(args.getHdAsync(), args));
-                            }
-
-                            return args.doNext(false);
-                        }
-                    })
-                    .both(new HdAsyncAction(Looper.getMainLooper()) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "6");
-
+                        args.setValue(true);
+                        return args.doNext(true);
+                    }
+                })
+                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "2");
+                        if ((Boolean) args.getValue()) {
                             SampleActivity activity = (SampleActivity) args.getHost();
                             if (activity != null) {
-                                activity.testBtn.setText("" + args.getValue());
+                                activity.container.setBackgroundColor(Color.TRANSPARENT);
                             }
-                            return args.doNext(false);
                         }
-                    }, new HdAsyncAction(backgroundLooper) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "7");
-
-                            return args.doNext(true);
+                        args.setValue(false);
+                        return args.doNext(true);
+                    }
+                })
+                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "3");
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                    })
-                    .delay(new HdAsyncAction(Looper.getMainLooper()) {
-                        @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
-                            Log.d(HdAsync.TAG, "8");
-
+                        return args.doNext(true);
+                    }
+                })
+                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "4");
+                        if (!(Boolean) args.getValue()) {
                             SampleActivity activity = (SampleActivity) args.getHost();
                             if (activity != null) {
-                                activity.testBtn.setText("finish");
+                                activity.container.setBackgroundColor(Color.parseColor("#4CAF50"));
                             }
-                            return args.doNext(false);
                         }
-                    }, 200);
+                        args.setValue(false);
+                        return args.doNext(true);
+                    }
+                })
+                .then(new HdAsyncAction(backgroundLooper) {
+                    @Override
+                    public HdAsyncResult call(final HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "5");
 
-        }
+                        SampleActivity activity = (SampleActivity) args.getHost();
+                        if (activity != null && args.getHdAsync() != null) {
+                            activity.test2(new AsynTestClass(args.getHdAsync(), args));
+                        }
+
+                        return args.doNext(false);
+                    }
+                })
+                .both(new HdAsyncAction(Looper.getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "6");
+
+                        SampleActivity activity = (SampleActivity) args.getHost();
+                        if (activity != null) {
+                            activity.testBtn.setText("" + args.getValue());
+                        }
+                        return args.doNext(false);
+                    }
+                }, new HdAsyncAction(backgroundLooper) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "7");
+
+                        return args.doNext(true);
+                    }
+                })
+                .delay(new HdAsyncAction(Looper.getMainLooper()) {
+                    @Override
+                    public HdAsyncResult call(HdAsyncArgs args) {
+                        Log.d(HdAsync.TAG, "8");
+
+                        SampleActivity activity = (SampleActivity) args.getHost();
+                        if (activity != null) {
+                            activity.testBtn.setText("finish");
+                        }
+                        return args.doNext(false);
+                    }
+                }, 200);
+
     }
 
     public void test2(final IAsyncTest asyncTest) {

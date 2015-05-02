@@ -52,15 +52,16 @@ public class HdAsyncArgs {
         return new HdAsyncResult(needNext, this);
     }
 
-    public HdAsyncResult doNextByCountDown() {
-        if (countDownNum == null) {
-            return new HdAsyncResult(false, this);
+    public HdAsyncCountDownResult doNextByCountDown(boolean needNext) {
+
+        if (!needNext || countDownNum == null) {
+            return new HdAsyncCountDownResult(false, this);
         }
 
         if (countDownNum.decrementAndGet() == 0) {
-            return new HdAsyncResult(true, this);
+            return new HdAsyncCountDownResult(true, this);
         } else {
-            return new HdAsyncResult(false, this);
+            return new HdAsyncCountDownResult(false, this);
         }
 
     }

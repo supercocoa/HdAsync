@@ -30,6 +30,7 @@ proguard/
 
 #intellij files
 .idea
+.idea/gradle.xml
 
 out/
 *.iml
