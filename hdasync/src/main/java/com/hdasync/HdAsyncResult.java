@@ -5,7 +5,7 @@ package com.hdasync;
  */
 public class HdAsyncResult extends BaseResult {
 
-    protected HdAsyncResult(boolean needNext, HdAsyncArgs args) {
-        super(needNext, args);
+    protected HdAsyncResult(boolean needNext, Object value) {
+        super(needNext, value);
     }
 }

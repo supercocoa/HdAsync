@@ -12,6 +12,14 @@ public abstract class HdAsyncAction extends BaseAction {
     }
 
     @Override
-    public abstract HdAsyncResult call(HdAsyncArgs args);
+    public abstract HdAsyncResult call(Object args);
+
+    public HdAsyncResult doNext(boolean needNext, Object value) {
+        return new HdAsyncResult(needNext, value);
+    }
+
+    public HdAsyncResult doNext(boolean needNext) {
+        return doNext(needNext, null);
+    }
 }
 

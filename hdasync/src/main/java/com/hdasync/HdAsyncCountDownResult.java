@@ -3,9 +3,9 @@ package com.hdasync;
 /**
  * Created by scott on 15/5/2.
  */
-public class HdAsyncCountDownResult extends HdAsyncResult {
+public class HdAsyncCountDownResult extends BaseResult {
 
-    protected HdAsyncCountDownResult(boolean needNext, HdAsyncArgs args) {
-        super(needNext, args);
+    protected HdAsyncCountDownResult(boolean needNext, Object value) {
+        super(needNext, value);
     }
 }

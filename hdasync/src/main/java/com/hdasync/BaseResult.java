@@ -4,11 +4,11 @@ package com.hdasync;
  * Created by scott on 15/5/2.
  */
 class BaseResult {
-    protected HdAsyncArgs args;
+    protected Object value;
     protected boolean needNext = false;
 
-    protected BaseResult(boolean needNext, HdAsyncArgs args) {
+    protected BaseResult(boolean needNext, Object value) {
         this.needNext = needNext;
-        this.args = args;
+        this.value = value;
     }
 }

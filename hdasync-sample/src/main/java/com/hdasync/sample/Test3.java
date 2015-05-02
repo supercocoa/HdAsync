@@ -4,7 +4,6 @@ import android.os.Looper;
 import android.util.Log;
 import com.hdasync.HdAsync;
 import com.hdasync.HdAsyncAction;
-import com.hdasync.HdAsyncArgs;
 import com.hdasync.HdAsyncResult;
 
 /**
@@ -22,11 +21,11 @@ public class Test3 {
         return HdAsync.with(host)
                 .then(new HdAsyncAction(backgroundLooper) {
                     @Override
-                    public HdAsyncResult call(HdAsyncArgs args) {
+                    public HdAsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "test3 start");
 
-                        if (args.getHost() != null) {
-                            Log.d(HdAsync.TAG, ((Test3) args.getHost()).TAG);
+                        if (getHost() != null) {
+                            Log.d(HdAsync.TAG, ((Test3) getHost()).TAG);
                         }
 
                         try {
@@ -35,7 +34,7 @@ public class Test3 {
                             e.printStackTrace();
                         }
                         asyncTest.onSuccess();
-                        return args.doNext(true);
+                        return doNext(true);
                     }
                 });
 
@@ -46,7 +45,7 @@ public class Test3 {
             return HdAsync.with(host)
                     .then(new HdAsyncAction(backgroundLooper) {
                         @Override
-                        public HdAsyncResult call(HdAsyncArgs args) {
+                        public HdAsyncResult call(Object args) {
                             Log.d(HdAsync.TAG, "test3 start");
 
                             try {
@@ -55,7 +54,7 @@ public class Test3 {
                                 e.printStackTrace();
                             }
                             asyncTest.onSuccess();
-                            return args.doNext(true);
+                            return doNext(true);
                         }
                     });
 

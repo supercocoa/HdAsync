@@ -29,8 +29,7 @@ proguard/
 .DS_Store
 
 #intellij files
-.idea
-.idea/gradle.xml
+.idea/
 
 out/
 *.iml

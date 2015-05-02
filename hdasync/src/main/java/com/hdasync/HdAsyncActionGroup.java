@@ -10,7 +10,6 @@ public class HdAsyncActionGroup {
 
     public class ActionArray {
         BaseAction[] array;
-        AtomicInteger countDownNum;
     }
 
     private LinkedList<ActionArray> actionList;
@@ -77,10 +76,9 @@ public class HdAsyncActionGroup {
         actionList.add(actionArray);
     }
 
-    protected void both(int countDownNum, HdAsyncCountDownAction... actions) {
+    protected void both(HdAsyncCountDownAction... actions) {
         ActionArray actionArray = new ActionArray();
         actionArray.array = actions;
-        actionArray.countDownNum = new AtomicInteger(countDownNum);
 
         actionCount.addAndGet(actions.length);
         actionList.add(actionArray);

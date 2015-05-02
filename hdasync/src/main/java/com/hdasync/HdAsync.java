@@ -3,6 +3,8 @@ package com.hdasync;
 import android.os.Handler;
 import android.os.Message;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Created by scott on 15/3/26.
@@ -11,8 +13,8 @@ public class HdAsync {
 
     public static final String TAG = "HdAsync";
 
-    private HdAsyncArgs args;
     private HdAsyncActionGroup actionGroup;
+    private Object host;
 
     private boolean isCanceled = false;
     private boolean isDone = false;
@@ -22,22 +24,19 @@ public class HdAsync {
     }
 
     private HdAsync(Object host) {
+        this.host = host;
         actionGroup = new HdAsyncActionGroup();
-        args = new HdAsyncArgs();
-        args.setHdAsync(this);
-        args.setHost(host);
     }
 
 
     public HdAsync call() {
         isCanceled = false;
-        executeAction(args, true);
+        executeAction(null, true);
         return this;
     }
 
-    public HdAsync call(HdAsyncArgs args) {
+    public HdAsync call(Object args) {
         isCanceled = false;
-        this.args = args;
         executeAction(args, true);
         return this;
     }
@@ -47,7 +46,7 @@ public class HdAsync {
         return this;
     }
 
-    public HdAsync resume(HdAsyncArgs args) {
+    public HdAsync resume(Object args) {
         call(args);
         return this;
     }
@@ -65,26 +64,44 @@ public class HdAsync {
             actionGroup.clear();
         }
         actionGroup = null;
-        args = null;
     }
 
     public HdAsync then(final HdAsyncAction action) {
-        actionGroup.then(action);
+        if (action != null) {
+            action.setHost(host);
+            actionGroup.then(action);
+        }
+
         return this;
     }
 
     public HdAsync delay(final HdAsyncAction action, long delay) {
-        actionGroup.delay(action, delay);
+        if (action != null) {
+            action.setHost(host);
+            actionGroup.delay(action, delay);
+        }
         return this;
     }
 
     public HdAsync both(HdAsyncAction... actions) {
+        if (actions != null) {
+            for (HdAsyncAction action : actions) {
+                action.setHost(host);
+            }
+        }
         actionGroup.both(actions);
         return this;
     }
 
     public HdAsync both(int countDownNum, HdAsyncCountDownAction... actions) {
-        actionGroup.both(countDownNum, actions);
+        if (actions != null) {
+            AtomicInteger atomicCountDownNum = new AtomicInteger(countDownNum);
+            for (HdAsyncCountDownAction action : actions) {
+                action.setHost(host);
+                action.setCountDownNum(atomicCountDownNum);
+            }
+        }
+        actionGroup.both(actions);
         return this;
     }
 
@@ -98,10 +115,10 @@ public class HdAsync {
 
     static class Data {
         BaseAction action;
-        HdAsyncArgs args;
+        Object args;
     }
 
-    private void executeAction(HdAsyncArgs args, boolean needNext) {
+    private void executeAction(Object args, boolean needNext) {
         if (actionGroup != null && !actionGroup.allActionFinish()) {
 
             if (!needNext || isCanceled) {
@@ -122,19 +139,13 @@ public class HdAsync {
                     continue;
                 }
 
+                action.setHdAsync(this); // setHdAsync in runtime
+
                 Handler handler = new Handler(action.looper, new HandlerCallback());
                 Message msg = Message.obtain();
                 Data data = new Data();
                 data.action = action;
-
-                data.args = new HdAsyncArgs();
-                data.args.setHdAsync(args.getHdAsync());
-                data.args.setHost(args.getHost());
-                data.args.setValue(args.getValue());
-
-                if (actionArray.countDownNum != null) {
-                    data.args.setCountDownNum(actionArray.countDownNum);
-                }
+                data.args = args;
 
                 msg.obj = data;
                 if (action.delay == 0) {
@@ -162,14 +173,14 @@ public class HdAsync {
             Data data = (Data) message.obj;
 
             BaseAction action = data.action;
-            HdAsyncArgs args = data.args;
+            Object args = data.args;
 
             BaseResult result = action.call(args);
 
             actionGroup.finishOneAction();
 
             if (result != null) {
-                executeAction(result.args, result.needNext);
+                executeAction(result.value, result.needNext);
             }
 
             return false;
