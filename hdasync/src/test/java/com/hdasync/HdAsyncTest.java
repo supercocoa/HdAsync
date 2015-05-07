@@ -21,7 +21,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class HdAsyncTest {
 
     @Mock
-    HdAsync<Object> hdAsync;
+    HdAsync hdAsync;
 
 
     @Before

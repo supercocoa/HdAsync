@@ -16,6 +16,7 @@ public class HdAsync {
     private HdAsyncActionGroup actionGroup;
     private Object host;
 
+    private boolean isCalling = false;
     private boolean isCanceled = false;
     private boolean isDone = false;
 
@@ -29,15 +30,22 @@ public class HdAsync {
     }
 
 
-    public HdAsync call() {
+    public synchronized HdAsync call() {
         isCanceled = false;
-        executeAction(null, true);
+        if (!isCalling) {
+            isCalling = true;
+            executeActionWithoutLock(null, true);
+        }
+
         return this;
     }
 
-    public HdAsync call(Object args) {
+    public synchronized HdAsync call(Object args) {
         isCanceled = false;
-        executeAction(args, true);
+        if (!isCalling) {
+            isCalling = true;
+            executeActionWithoutLock(args, true);
+        }
         return this;
     }
 
@@ -51,22 +59,26 @@ public class HdAsync {
         return this;
     }
 
-    public void cancel() {
+    public synchronized void cancel() {
         isCanceled = true;
+        isCalling = false;
     }
 
     public boolean isDone() {
         return isDone;
     }
 
-    public void destroy() {
+    public synchronized void destroy() {
+        destroyWithoutLock();
+    }
+
+    public void destroyWithoutLock() {
         if (actionGroup != null) {
             actionGroup.clear();
         }
-        actionGroup = null;
     }
 
-    public HdAsync then(final HdAsyncAction action) {
+    public synchronized HdAsync then(final HdAsyncAction action) {
         if (action != null) {
             action.setHost(host);
             actionGroup.then(action);
@@ -75,7 +87,7 @@ public class HdAsync {
         return this;
     }
 
-    public HdAsync delay(final HdAsyncAction action, long delay) {
+    public synchronized HdAsync delay(final HdAsyncAction action, long delay) {
         if (action != null) {
             action.setHost(host);
             actionGroup.delay(action, delay);
@@ -83,7 +95,7 @@ public class HdAsync {
         return this;
     }
 
-    public HdAsync both(HdAsyncAction... actions) {
+    public synchronized HdAsync both(HdAsyncAction... actions) {
         if (actions != null) {
             for (HdAsyncAction action : actions) {
                 action.setHost(host);
@@ -93,7 +105,7 @@ public class HdAsync {
         return this;
     }
 
-    public HdAsync both(int countDownNum, HdAsyncCountDownAction... actions) {
+    public synchronized HdAsync both(int countDownNum, HdAsyncCountDownAction... actions) {
         if (actions != null) {
             AtomicInteger atomicCountDownNum = new AtomicInteger(countDownNum);
             for (HdAsyncCountDownAction action : actions) {
@@ -105,7 +117,7 @@ public class HdAsync {
         return this;
     }
 
-    public HdAsync append(HdAsync other) {
+    public synchronized HdAsync append(HdAsync other) {
         if (other != null) {
             actionGroup.append(other.actionGroup);
         }
@@ -118,7 +130,11 @@ public class HdAsync {
         Object args;
     }
 
-    private void executeAction(Object args, boolean needNext) {
+    private synchronized void executeAction(Object args, boolean needNext) {
+        executeActionWithoutLock(args, needNext);
+    }
+
+    private void executeActionWithoutLock(Object args, boolean needNext) {
         if (actionGroup != null && !actionGroup.allActionFinish()) {
 
             if (!needNext || isCanceled) {
@@ -156,8 +172,9 @@ public class HdAsync {
             }
 
         } else {
+            isCalling = false;
             isDone = true;
-            destroy();
+            destroyWithoutLock();
         }
     }
 
