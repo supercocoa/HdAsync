@@ -100,8 +100,8 @@ public class HdAsync {
             for (HdAsyncAction action : actions) {
                 action.setHost(host);
             }
+            actionGroup.both(actions);
         }
-        actionGroup.both(actions);
         return this;
     }
 

@@ -1,9 +1,9 @@
 package com.hdasync.sample;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +13,7 @@ import com.hdasync.HdAsyncAction;
 import com.hdasync.HdAsyncCountDownAction;
 import com.hdasync.HdAsyncCountDownResult;
 import com.hdasync.HdAsyncResult;
+import com.hdasync.HdThreadFactory;
 import com.hdasync.R;
 
 import java.lang.ref.WeakReference;
@@ -22,85 +23,122 @@ import java.lang.ref.WeakReference;
  */
 public class SampleActivity extends Activity {
 
+    boolean isInitFinish = false;
     View container;
     TextView testBtn;
 
     volatile HdAsync hdAsync;
 
-    static Looper backgroundLooper;
-
-    boolean hasWindowFocusChanged = false;
-
-
-    static {
-        HandlerThread handlerThread = new HandlerThread("back", android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        handlerThread.start();
-        backgroundLooper = handlerThread.getLooper();
-    }
+    static Looper backgroundLooper = HdThreadFactory.getLooper(HdThreadFactory.BackGroundThread);
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        View v = new View(this);
-        v.setBackgroundColor(Color.WHITE);
-        setContentView(v);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        Log.d(HdAsync.TAG, "onWindowFocusChanged");
-
-        if (hasWindowFocusChanged) {
-            return;
-        }
-
-        hasWindowFocusChanged = true;
-
-        HdAsync.with(this)
-                .then(new HdAsyncAction(backgroundLooper) {
+        hdAsync = HdAsync.with(this)
+                .then(new HdAsyncAction(getMainLooper()) {
                     @Override
                     public HdAsyncResult call(Object args) {
-                        Log.d(HdAsync.TAG, "inflate");
-                        View contentView = getLayoutInflater().inflate(R.layout.hdasync_sample_activity, null);
-                        return doNext(true, contentView);
+                        beforeInitAtMainThread(savedInstanceState);
+                        return doNext(true);
                     }
                 })
-                .both(1, new HdAsyncCountDownAction(getMainLooper()) {
+                .both(2, new HdAsyncCountDownAction(getMainLooper()) {
                     @Override
                     public HdAsyncCountDownResult call(Object args) {
-                        Log.d(HdAsync.TAG, "initView");
-                        initView((View) args);
-                        bindEvents();
-
+                        initAtMainThread();
                         return doNextByCountDown(true);
                     }
                 }, new HdAsyncCountDownAction(backgroundLooper) {
                     @Override
                     public HdAsyncCountDownResult call(Object args) {
-                        initDatas();
-
+                        initAtBackgroundThread();
                         return doNextByCountDown(true);
                     }
-                }, new HdAsyncCountDownAction(getMainLooper()) {
-                    @Override
-                    public HdAsyncCountDownResult call(Object args) {
-                        return doNextByCountDown(false);
-                    }
                 })
-                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                .then(new HdAsyncAction(getMainLooper()) {
                     @Override
                     public HdAsyncResult call(Object args) {
-                        Log.d(HdAsync.TAG, "refresh");
-                        return doNext(false);
+                        afterInitAtMainThread();
+                        isInitFinish = true;
+                        return doNext(true);
                     }
                 })
                 .call();
     }
 
-    private void initView(View contentView) {
-        setContentView(contentView);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        hdAsync.then(new HdAsyncAction(Looper.getMainLooper()) {
+            @Override
+            public HdAsyncResult call(Object args) {
+                resumeAtMainThread();
+                return doNext(true);
+            }
+        }).call();
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (hdAsync != null) {
+            hdAsync.cancel();
+            hdAsync.destroy();
+        }
+    }
+
+    /**
+     * step 0 初始化前  在主线程中  eg.可以pase intent等为初始化准备的工作
+     *
+     * @param savedInstanceState
+     */
+    protected void beforeInitAtMainThread(Bundle savedInstanceState) {
+
+    }
+
+    /**
+     * step 1 初始化 在主线程中 eg.设置界面 绑定ui控件
+     */
+    protected void initAtMainThread() {
+        initView();
+        bindEvents();
+    }
+
+    /**
+     * step 1 初始化 在后台线程中 eg.初始化service 从db读数据等
+     */
+    protected void initAtBackgroundThread() {
+        initDatas();
+    }
+
+    /**
+     * step 2 初始化后 在主线程中 eg.可以在初始化完后刷新界面
+     */
+    protected void afterInitAtMainThread() {
+        //refresh
+    }
+
+    /**
+     * step 2.5 从别的Activity回来 在主线程中
+     */
+    protected  void activityResultAtMainThread(int requestCode, int resultCode, Intent data) {
+        //onActivityResult
+    }
+
+    /**
+     * step 3 resume 在主线程中
+     */
+    protected void resumeAtMainThread() {
+
+    }
+
+
+    private void initView() {
+        setContentView(R.layout.hdasync_sample_activity);
         container = findViewById(R.id.container);
         container.setBackgroundColor(Color.parseColor("#00B0FF"));
 
@@ -118,18 +156,6 @@ public class SampleActivity extends Activity {
     }
 
     private void initDatas() {
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        if (hdAsync != null) {
-            hdAsync.destroy();
-            hdAsync = null;
-        }
-
-        Log.d(HdAsync.TAG, "onDestory");
-        super.onDestroy();
     }
 
 
@@ -199,6 +225,7 @@ public class SampleActivity extends Activity {
                         SampleActivity activity = (SampleActivity) getHost();
                         if (activity != null && getHdAsync() != null) {
                             activity.test2(new AsynTestClass(getHdAsync()));
+                            getHdAsync().cancel();
                         }
 
                         return doNext(false);
