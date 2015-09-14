@@ -1,6 +1,6 @@
 # HdAsync
 
-**A android asynchronous communication library based on Handler**
+**An android asynchronous communication library based on Handler**
 
 `HandlerThread/Handler` emebed in Andorid framework makes UI thread and background thread communication easily.But when chained or hierarchical invoke happens,callbak logic is harder to handle.It turns out to be either callback inside callback or original  "continuous" logic being divided into a mess. Meanwhile because callback usually implemented as a innner static class which is likely leading to memory leak in Android enviroment.
 
