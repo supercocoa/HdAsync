@@ -17,6 +17,8 @@ import com.hdasync.HdThreadFactory;
 import com.hdasync.R;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by scott on 15/3/26.
@@ -30,6 +32,8 @@ public class SampleActivity extends Activity {
     volatile HdAsync hdAsync;
 
     static Looper backgroundLooper = HdThreadFactory.getLooper(HdThreadFactory.BackGroundThread);
+
+    static ExecutorService pool = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -125,7 +129,7 @@ public class SampleActivity extends Activity {
     /**
      * step 2.5 从别的Activity回来 在主线程中
      */
-    protected  void activityResultAtMainThread(int requestCode, int resultCode, Intent data) {
+    protected void activityResultAtMainThread(int requestCode, int resultCode, Intent data) {
         //onActivityResult
     }
 
@@ -166,7 +170,7 @@ public class SampleActivity extends Activity {
 
     public static HdAsync createTestHdAsync(SampleActivity host) {
         return HdAsync.with(host)
-                .then(new HdAsyncAction(backgroundLooper) {
+                .then(new HdAsyncAction(pool) {
                     @Override
                     public HdAsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "1");
@@ -217,7 +221,7 @@ public class SampleActivity extends Activity {
                         return doNext(true);
                     }
                 })
-                .then(new HdAsyncAction(backgroundLooper) {
+                .then(new HdAsyncAction(pool) {
                     @Override
                     public HdAsyncResult call(final Object args) {
                         Log.d(HdAsync.TAG, "5");
@@ -261,7 +265,7 @@ public class SampleActivity extends Activity {
                         }
                         return doNext(false);
                     }
-                }, 200);
+                }, 1200);
 
     }
 

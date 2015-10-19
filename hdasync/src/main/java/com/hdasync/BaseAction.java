@@ -3,12 +3,15 @@ package com.hdasync;
 import android.os.Looper;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by scott on 15/5/2.
  */
 abstract class BaseAction {
     protected Looper looper;
+
+    protected ExecutorService pool;
 
     protected long delay = 0;
 
@@ -17,6 +20,10 @@ abstract class BaseAction {
 
     public BaseAction(Looper looper) {
         this.looper = looper;
+    }
+
+    public BaseAction(ExecutorService pool) {
+        this.pool = pool;
     }
 
     public abstract BaseResult call(Object args);

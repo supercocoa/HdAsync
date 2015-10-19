@@ -2,6 +2,8 @@ package com.hdasync;
 
 import android.os.Looper;
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * Created by scott on 15/3/26.
  */
@@ -9,6 +11,12 @@ public abstract class HdAsyncAction extends BaseAction {
 
     public HdAsyncAction(Looper looper) {
         super(looper);
+        this.pool = null;
+    }
+
+    public HdAsyncAction(ExecutorService pool) {
+        super(pool);
+        this.looper = null;
     }
 
     @Override

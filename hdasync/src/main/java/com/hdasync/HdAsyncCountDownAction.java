@@ -2,6 +2,7 @@ package com.hdasync;
 
 import android.os.Looper;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -13,6 +14,10 @@ public abstract class HdAsyncCountDownAction extends BaseAction {
 
     public HdAsyncCountDownAction(Looper looper) {
         super(looper);
+    }
+
+    public HdAsyncCountDownAction(ExecutorService pool) {
+        super(pool);
     }
 
     @Override
