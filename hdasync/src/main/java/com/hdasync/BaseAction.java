@@ -20,10 +20,12 @@ abstract class BaseAction {
 
     public BaseAction(Looper looper) {
         this.looper = looper;
+        this.pool = null;
     }
 
     public BaseAction(ExecutorService pool) {
         this.pool = pool;
+        this.looper = null;
     }
 
     public abstract BaseResult call(Object args);

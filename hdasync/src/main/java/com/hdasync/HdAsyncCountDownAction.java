@@ -20,6 +20,7 @@ public abstract class HdAsyncCountDownAction extends BaseAction {
         super(pool);
     }
 
+
     @Override
     public abstract HdAsyncCountDownResult call(Object args);
 

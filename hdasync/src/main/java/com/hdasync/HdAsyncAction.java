@@ -9,14 +9,13 @@ import java.util.concurrent.ExecutorService;
  */
 public abstract class HdAsyncAction extends BaseAction {
 
+
     public HdAsyncAction(Looper looper) {
         super(looper);
-        this.pool = null;
     }
 
     public HdAsyncAction(ExecutorService pool) {
         super(pool);
-        this.looper = null;
     }
 
     @Override
