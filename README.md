@@ -4,7 +4,7 @@
 
 `HdAsync` is an android library to help asynchronous operation easily.
 
-* support each asynchronous operation bind to handler thread looper or thread pool.
+* support each step of asynchronous operation flow bind to handler thread looper or thread pool.
 * support `then`, `both` and `delay`  operation.
 * `append`  can add other async operation to the current flow.
 * simple and clean

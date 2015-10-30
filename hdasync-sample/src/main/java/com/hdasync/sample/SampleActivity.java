@@ -53,7 +53,7 @@ public class SampleActivity extends Activity {
                         initAtMainThread();
                         return doNextByCountDown(true);
                     }
-                }, new HdAsyncCountDownAction(backgroundPool) {
+                }, new HdAsyncCountDownAction(backgroundLooper) {
                     @Override
                     public HdAsyncCountDownResult call(Object args) {
                         initAtBackgroundThread();
