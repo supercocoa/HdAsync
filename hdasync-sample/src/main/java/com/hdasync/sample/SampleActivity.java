@@ -33,7 +33,7 @@ public class SampleActivity extends Activity {
 
     static Looper backgroundLooper = HdThreadFactory.getLooper(HdThreadFactory.BackGroundThread);
 
-    static ExecutorService pool = Executors.newFixedThreadPool(4);
+    static ExecutorService backgroundPool = Executors.newFixedThreadPool(4);
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -53,7 +53,7 @@ public class SampleActivity extends Activity {
                         initAtMainThread();
                         return doNextByCountDown(true);
                     }
-                }, new HdAsyncCountDownAction(backgroundLooper) {
+                }, new HdAsyncCountDownAction(backgroundPool) {
                     @Override
                     public HdAsyncCountDownResult call(Object args) {
                         initAtBackgroundThread();
@@ -170,7 +170,7 @@ public class SampleActivity extends Activity {
 
     public static HdAsync createTestHdAsync(SampleActivity host) {
         return HdAsync.with(host)
-                .then(new HdAsyncAction(pool) {
+                .then(new HdAsyncAction(backgroundPool) {
                     @Override
                     public HdAsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "1");
@@ -221,7 +221,7 @@ public class SampleActivity extends Activity {
                         return doNext(true);
                     }
                 })
-                .then(new HdAsyncAction(pool) {
+                .then(new HdAsyncAction(backgroundPool) {
                     @Override
                     public HdAsyncResult call(final Object args) {
                         Log.d(HdAsync.TAG, "5");
