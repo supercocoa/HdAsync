@@ -14,7 +14,6 @@ import com.hdasync.HdAsyncCountDownAction;
 import com.hdasync.HdAsyncCountDownResult;
 import com.hdasync.HdAsyncResult;
 import com.hdasync.HdThreadFactory;
-import com.hdasync.R;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;

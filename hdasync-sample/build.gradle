@@ -17,7 +17,7 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        applicationId "ccom.hdasync"
+        applicationId "ccom.hdasync.sample"
         minSdkVersion 9
         targetSdkVersion 23
         versionCode 1
