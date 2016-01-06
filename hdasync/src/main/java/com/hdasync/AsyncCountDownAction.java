@@ -8,40 +8,40 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by scott on 15/5/2.
  */
-public abstract class HdAsyncCountDownAction extends BaseAction {
+public abstract class AsyncCountDownAction extends BaseAction {
 
     private AtomicInteger countDownNum;
 
-    public HdAsyncCountDownAction(Looper looper) {
+    public AsyncCountDownAction(Looper looper) {
         super(looper);
     }
 
-    public HdAsyncCountDownAction(ExecutorService pool) {
+    public AsyncCountDownAction(ExecutorService pool) {
         super(pool);
     }
 
 
     @Override
-    public abstract HdAsyncCountDownResult call(Object args);
+    public abstract AsyncCountDownResult call(Object args);
 
     public void setCountDownNum(AtomicInteger countDownNum) {
         this.countDownNum = countDownNum;
     }
 
-    public HdAsyncCountDownResult doNextByCountDown(boolean needNext, Object value) {
+    public AsyncCountDownResult doNextByCountDown(boolean needNext, Object value) {
 
         if (!needNext || countDownNum == null) {
-            return new HdAsyncCountDownResult(false, value);
+            return new AsyncCountDownResult(false, value);
         }
 
         if (countDownNum.decrementAndGet() == 0) {
-            return new HdAsyncCountDownResult(true, value);
+            return new AsyncCountDownResult(true, value);
         } else {
-            return new HdAsyncCountDownResult(false, value);
+            return new AsyncCountDownResult(false, value);
         }
     }
 
-    public HdAsyncCountDownResult doNextByCountDown(boolean needNext) {
+    public AsyncCountDownResult doNextByCountDown(boolean needNext) {
         return doNextByCountDown(needNext, null);
     }
 }

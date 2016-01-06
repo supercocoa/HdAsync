@@ -8,12 +8,16 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import com.hdasync.AsyncAction;
+import com.hdasync.AsyncCountDownAction;
+import com.hdasync.AsyncCountDownResult;
+import com.hdasync.AsyncResult;
+import com.hdasync.Callable;
+import com.hdasync.HandlerThreadFactory;
 import com.hdasync.HdAsync;
-import com.hdasync.HdAsyncAction;
-import com.hdasync.HdAsyncCountDownAction;
-import com.hdasync.HdAsyncCountDownResult;
-import com.hdasync.HdAsyncResult;
-import com.hdasync.HdThreadFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
@@ -24,13 +28,16 @@ import java.util.concurrent.Executors;
  */
 public class SampleActivity extends Activity {
 
+    @Bind(R.id.container) View container;
+    @Bind(R.id.test) TextView testBtn;
+
     boolean isInitFinish = false;
-    View container;
-    TextView testBtn;
 
     volatile HdAsync hdAsync;
+    volatile Callable callable;
 
-    static Looper backgroundLooper = HdThreadFactory.getLooper(HdThreadFactory.BackGroundThread);
+
+    static Looper backgroundLooper = HandlerThreadFactory.getLooper(HandlerThreadFactory.BackGroundThread);
 
     static ExecutorService backgroundPool = Executors.newFixedThreadPool(4);
 
@@ -38,30 +45,30 @@ public class SampleActivity extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        hdAsync = HdAsync.with(this)
-                .then(new HdAsyncAction(getMainLooper()) {
+        callable = HdAsync.with(this)
+                .then(new AsyncAction(getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         beforeInitAtMainThread(savedInstanceState);
                         return doNext(true);
                     }
                 })
-                .both(2, new HdAsyncCountDownAction(getMainLooper()) {
+                .both(2, new AsyncCountDownAction(getMainLooper()) {
                     @Override
-                    public HdAsyncCountDownResult call(Object args) {
+                    public AsyncCountDownResult call(Object args) {
                         initAtMainThread();
                         return doNextByCountDown(true);
                     }
-                }, new HdAsyncCountDownAction(backgroundLooper) {
+                }, new AsyncCountDownAction(backgroundLooper) {
                     @Override
-                    public HdAsyncCountDownResult call(Object args) {
+                    public AsyncCountDownResult call(Object args) {
                         initAtBackgroundThread();
                         return doNextByCountDown(true);
                     }
                 })
-                .then(new HdAsyncAction(getMainLooper()) {
+                .then(new AsyncAction(getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         afterInitAtMainThread();
                         isInitFinish = true;
                         return doNext(true);
@@ -74,9 +81,9 @@ public class SampleActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        hdAsync.then(new HdAsyncAction(Looper.getMainLooper()) {
+        callable.then(new AsyncAction(Looper.getMainLooper()) {
             @Override
-            public HdAsyncResult call(Object args) {
+            public AsyncResult call(Object args) {
                 resumeAtMainThread();
                 return doNext(true);
             }
@@ -89,8 +96,8 @@ public class SampleActivity extends Activity {
         super.onDestroy();
 
         if (hdAsync != null) {
-            hdAsync.cancel();
-            hdAsync.destroy();
+            callable.cancel();
+            callable.destroy();
         }
     }
 
@@ -108,7 +115,6 @@ public class SampleActivity extends Activity {
      */
     protected void initAtMainThread() {
         initView();
-        bindEvents();
     }
 
     /**
@@ -142,36 +148,33 @@ public class SampleActivity extends Activity {
 
     private void initView() {
         setContentView(R.layout.hdasync_sample_activity);
-        container = findViewById(R.id.container);
-        container.setBackgroundColor(Color.parseColor("#00B0FF"));
+        ButterKnife.bind(this);
 
-        testBtn = (TextView) findViewById(R.id.test);
+        container.setBackgroundColor(Color.parseColor("#00B0FF"));
         testBtn.setBackgroundColor(Color.parseColor("#FF1744"));
     }
 
-    private void bindEvents() {
-        testBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                test();
-            }
-        });
-    }
 
     private void initDatas() {
     }
 
-
+    @OnClick(R.id.test)
     public void test() {
-        hdAsync = createTestHdAsync(this).call();
+        callable = createTestHdAsync(this).call();
     }
 
+    @OnClick(R.id.container)
+    public void onContainerClick() {
+        Intent intent = new Intent();
+        intent.setClass(SampleActivity.this, SecondActivity.class);
+        startActivity(intent);
+    }
 
-    public static HdAsync createTestHdAsync(SampleActivity host) {
+    public static Callable createTestHdAsync(SampleActivity host) {
         return HdAsync.with(host)
-                .then(new HdAsyncAction(backgroundPool) {
+                .then(new AsyncAction(backgroundPool) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "1");
                         try {
                             Thread.sleep(2000);
@@ -182,9 +185,9 @@ public class SampleActivity extends Activity {
                         return doNext(true, true);
                     }
                 })
-                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                .then(new AsyncAction(Looper.getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "2");
                         if ((Boolean) args) {
                             SampleActivity activity = (SampleActivity) getHost();
@@ -195,9 +198,9 @@ public class SampleActivity extends Activity {
                         return doNext(true, false);
                     }
                 })
-                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                .then(new AsyncAction(Looper.getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "3");
                         try {
                             Thread.sleep(2000);
@@ -207,9 +210,9 @@ public class SampleActivity extends Activity {
                         return doNext(true, false);
                     }
                 })
-                .then(new HdAsyncAction(Looper.getMainLooper()) {
+                .then(new AsyncAction(Looper.getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "4");
                         if (!(Boolean) args) {
                             SampleActivity activity = (SampleActivity) getHost();
@@ -220,23 +223,23 @@ public class SampleActivity extends Activity {
                         return doNext(true);
                     }
                 })
-                .then(new HdAsyncAction(backgroundPool) {
+                .then(new AsyncAction(backgroundPool) {
                     @Override
-                    public HdAsyncResult call(final Object args) {
+                    public AsyncResult call(final Object args) {
                         Log.d(HdAsync.TAG, "5");
 
                         SampleActivity activity = (SampleActivity) getHost();
-                        if (activity != null && getHdAsync() != null) {
-                            activity.test2(new AsynTestClass(getHdAsync()));
-                            getHdAsync().cancel();
+                        if (activity != null && getCallable() != null) {
+                            activity.test2(new AsynTestClass(getCallable()));
+                            getCallable().cancel();
                         }
 
                         return doNext(false);
                     }
                 })
-                .both(new HdAsyncAction(Looper.getMainLooper()) {
+                .both(new AsyncAction(Looper.getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "6");
 
                         SampleActivity activity = (SampleActivity) getHost();
@@ -245,17 +248,17 @@ public class SampleActivity extends Activity {
                         }
                         return doNext(false);
                     }
-                }, new HdAsyncAction(backgroundLooper) {
+                }, new AsyncAction(backgroundLooper) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "7");
 
                         return doNext(true);
                     }
                 })
-                .delay(new HdAsyncAction(Looper.getMainLooper()) {
+                .delay(new AsyncAction(Looper.getMainLooper()) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "8");
 
                         SampleActivity activity = (SampleActivity) getHost();
@@ -270,12 +273,12 @@ public class SampleActivity extends Activity {
 
     public void test2(final IAsyncTest asyncTest) {
         Test3 test3 = new Test3();
-        HdAsync hdAsync3 = test3.test(asyncTest, backgroundLooper);
+        Callable hdAsync3 = test3.test(asyncTest, backgroundLooper);
 
         HdAsync.with(this)
-                .then(new HdAsyncAction(backgroundLooper) {
+                .then(new AsyncAction(backgroundLooper) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "test2 start");
 
                         try {
@@ -292,20 +295,25 @@ public class SampleActivity extends Activity {
 
 
     static class AsynTestClass implements IAsyncTest {
-        WeakReference<HdAsync> weakReference;
+        WeakReference<Callable> weakReference;
 
-        public AsynTestClass(HdAsync hdAsync) {
-            this.weakReference = new WeakReference<HdAsync>(hdAsync);
+        public AsynTestClass(Callable callable) {
+            this.weakReference = new WeakReference<Callable>(callable);
         }
 
         @Override
         public void onSuccess() {
             Log.d(HdAsync.TAG, "AsynTestClass onSuccess1");
 
-            HdAsync hdAsync = weakReference.get();
-            if (hdAsync != null) {
+//            HdAsync hdAsync = weakReference.get();
+//            if (hdAsync != null) {
+//                Log.d(HdAsync.TAG, "AsynTestClass onSuccess2");
+//                hdAsync.resume(10);
+//            }
+            Callable callable = weakReference.get();
+            if (callable != null) {
                 Log.d(HdAsync.TAG, "AsynTestClass onSuccess2");
-                hdAsync.resume(10);
+                callable.resume(10);
             }
         }
     }

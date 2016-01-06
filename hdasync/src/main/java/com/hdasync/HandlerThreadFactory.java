@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by scott on 15/5/21.
  */
-public class HdThreadFactory {
+public class HandlerThreadFactory {
 
     public static final String ActivityInitThread = "ActivityInit_HandlerThread";
 

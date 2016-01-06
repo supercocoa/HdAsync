@@ -2,9 +2,10 @@ package com.hdasync.sample;
 
 import android.os.Looper;
 import android.util.Log;
+import com.hdasync.Callable;
 import com.hdasync.HdAsync;
-import com.hdasync.HdAsyncAction;
-import com.hdasync.HdAsyncResult;
+import com.hdasync.AsyncAction;
+import com.hdasync.AsyncResult;
 
 /**
  * Created by scott on 15/4/15.
@@ -13,15 +14,15 @@ public class Test3 {
 
     public static final String TAG = "Test3";
 
-    public HdAsync test(final IAsyncTest asyncTest, Looper backgroundLooper) {
+    public Callable test(final IAsyncTest asyncTest, Looper backgroundLooper) {
         return Test3.createHdAsaync(this, asyncTest, backgroundLooper);
     }
 
-    public static HdAsync createHdAsaync(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
+    public static Callable createHdAsaync(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
         return HdAsync.with(host)
-                .then(new HdAsyncAction(backgroundLooper) {
+                .then(new AsyncAction(backgroundLooper) {
                     @Override
-                    public HdAsyncResult call(Object args) {
+                    public AsyncResult call(Object args) {
                         Log.d(HdAsync.TAG, "test3 start");
 
                         if (getHost() != null) {
@@ -41,11 +42,11 @@ public class Test3 {
     }
 
     static class HdAsyncHolder {
-        public static HdAsync create(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
+        public static Callable create(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
             return HdAsync.with(host)
-                    .then(new HdAsyncAction(backgroundLooper) {
+                    .then(new AsyncAction(backgroundLooper) {
                         @Override
-                        public HdAsyncResult call(Object args) {
+                        public AsyncResult call(Object args) {
                             Log.d(HdAsync.TAG, "test3 start");
 
                             try {
