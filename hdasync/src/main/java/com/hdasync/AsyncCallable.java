@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by scott on 16/1/6.
  */
-public class Callable {
-    public static final String TAG = "Callable";
+public class AsyncCallable {
+    public static final String TAG = "AsyncCallable";
 
     private AsyncActionGroup actionGroup;
     private Object host;
@@ -24,13 +24,13 @@ public class Callable {
     private static ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
 
-    protected Callable(Object host) {
+    protected AsyncCallable(Object host) {
         this.host = host;
         actionGroup = new AsyncActionGroup();
     }
 
 
-    public synchronized Callable call() {
+    public synchronized AsyncCallable call() {
         isCanceled = false;
         if (!isCalling) {
             isCalling = true;
@@ -40,7 +40,7 @@ public class Callable {
         return this;
     }
 
-    public synchronized Callable call(Object args) {
+    public synchronized AsyncCallable call(Object args) {
         isCanceled = false;
         if (!isCalling) {
             isCalling = true;
@@ -49,12 +49,12 @@ public class Callable {
         return this;
     }
 
-    public Callable resume() {
+    public AsyncCallable resume() {
         call();
         return this;
     }
 
-    public Callable resume(Object args) {
+    public AsyncCallable resume(Object args) {
         call(args);
         return this;
     }
@@ -78,7 +78,7 @@ public class Callable {
         }
     }
 
-    public synchronized Callable then(final AsyncAction action) {
+    public synchronized AsyncCallable then(final AsyncAction action) {
         if (action != null) {
             action.setHost(host);
             actionGroup.then(action);
@@ -87,7 +87,7 @@ public class Callable {
         return this;
     }
 
-    public synchronized Callable delay(final AsyncAction action, long delay) {
+    public synchronized AsyncCallable delay(final AsyncAction action, long delay) {
         if (action != null) {
             action.setHost(host);
             actionGroup.delay(action, delay);
@@ -95,7 +95,7 @@ public class Callable {
         return this;
     }
 
-    public synchronized Callable both(AsyncAction... actions) {
+    public synchronized AsyncCallable both(AsyncAction... actions) {
         if (actions != null) {
             for (AsyncAction action : actions) {
                 action.setHost(host);
@@ -105,7 +105,7 @@ public class Callable {
         return this;
     }
 
-    public synchronized Callable both(int countDownNum, AsyncCountDownAction... actions) {
+    public synchronized AsyncCallable both(int countDownNum, AsyncCountDownAction... actions) {
         if (actions != null) {
             AtomicInteger atomicCountDownNum = new AtomicInteger(countDownNum);
             for (AsyncCountDownAction action : actions) {
@@ -117,7 +117,7 @@ public class Callable {
         return this;
     }
 
-    public synchronized Callable append(Callable other) {
+    public synchronized AsyncCallable append(AsyncCallable other) {
         if (other != null) {
             actionGroup.append(other.actionGroup);
         }

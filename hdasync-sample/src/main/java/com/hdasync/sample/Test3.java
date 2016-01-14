@@ -2,7 +2,7 @@ package com.hdasync.sample;
 
 import android.os.Looper;
 import android.util.Log;
-import com.hdasync.Callable;
+import com.hdasync.AsyncCallable;
 import com.hdasync.HdAsync;
 import com.hdasync.AsyncAction;
 import com.hdasync.AsyncResult;
@@ -14,11 +14,11 @@ public class Test3 {
 
     public static final String TAG = "Test3";
 
-    public Callable test(final IAsyncTest asyncTest, Looper backgroundLooper) {
+    public AsyncCallable test(final IAsyncTest asyncTest, Looper backgroundLooper) {
         return Test3.createHdAsaync(this, asyncTest, backgroundLooper);
     }
 
-    public static Callable createHdAsaync(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
+    public static AsyncCallable createHdAsaync(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
         return HdAsync.with(host)
                 .then(new AsyncAction(backgroundLooper) {
                     @Override
@@ -42,7 +42,7 @@ public class Test3 {
     }
 
     static class HdAsyncHolder {
-        public static Callable create(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
+        public static AsyncCallable create(Test3 host, final IAsyncTest asyncTest, Looper backgroundLooper) {
             return HdAsync.with(host)
                     .then(new AsyncAction(backgroundLooper) {
                         @Override

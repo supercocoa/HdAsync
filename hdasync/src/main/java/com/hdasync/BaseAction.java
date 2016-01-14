@@ -16,7 +16,7 @@ abstract class BaseAction {
     protected long delay = 0;
 
     private WeakReference<HdAsync> weakHdAsync;
-    private WeakReference<Callable> weakCallable;
+    private WeakReference<AsyncCallable> weakCallable;
 
     private WeakReference<Object> weakHost;
 
@@ -37,8 +37,8 @@ abstract class BaseAction {
         weakHdAsync = new WeakReference<HdAsync>(hdasync);
     }
 
-    public void setCallable(Callable callable) {
-        weakCallable = new WeakReference<Callable>(callable);
+    public void setCallable(AsyncCallable asyncCallable) {
+        weakCallable = new WeakReference<AsyncCallable>(asyncCallable);
     }
 
     public HdAsync getHdAsync() {
@@ -48,7 +48,7 @@ abstract class BaseAction {
         return null;
     }
 
-    public Callable getCallable() {
+    public AsyncCallable getCallable() {
         if (weakCallable != null) {
             return weakCallable.get();
         }

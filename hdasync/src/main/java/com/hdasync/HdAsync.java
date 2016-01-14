@@ -8,8 +8,8 @@ public class HdAsync {
     public static final String TAG = "HdAsync";
 
 
-    public static Callable with(Object host) {
-        return new Callable(host);
+    public static AsyncCallable with(Object host) {
+        return new AsyncCallable(host);
     }
 
 

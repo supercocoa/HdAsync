@@ -15,7 +15,7 @@ import com.hdasync.AsyncAction;
 import com.hdasync.AsyncCountDownAction;
 import com.hdasync.AsyncCountDownResult;
 import com.hdasync.AsyncResult;
-import com.hdasync.Callable;
+import com.hdasync.AsyncCallable;
 import com.hdasync.HandlerThreadFactory;
 import com.hdasync.HdAsync;
 
@@ -34,7 +34,7 @@ public class SampleActivity extends Activity {
     boolean isInitFinish = false;
 
     volatile HdAsync hdAsync;
-    volatile Callable callable;
+    volatile AsyncCallable asyncCallable;
 
 
     static Looper backgroundLooper = HandlerThreadFactory.getLooper(HandlerThreadFactory.BackGroundThread);
@@ -45,7 +45,7 @@ public class SampleActivity extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        callable = HdAsync.with(this)
+        asyncCallable = HdAsync.with(this)
                 .then(new AsyncAction(getMainLooper()) {
                     @Override
                     public AsyncResult call(Object args) {
@@ -81,7 +81,7 @@ public class SampleActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        callable.then(new AsyncAction(Looper.getMainLooper()) {
+        asyncCallable.then(new AsyncAction(Looper.getMainLooper()) {
             @Override
             public AsyncResult call(Object args) {
                 resumeAtMainThread();
@@ -96,8 +96,8 @@ public class SampleActivity extends Activity {
         super.onDestroy();
 
         if (hdAsync != null) {
-            callable.cancel();
-            callable.destroy();
+            asyncCallable.cancel();
+            asyncCallable.destroy();
         }
     }
 
@@ -160,7 +160,7 @@ public class SampleActivity extends Activity {
 
     @OnClick(R.id.test)
     public void test() {
-        callable = createTestHdAsync(this).call();
+        asyncCallable = createTestHdAsync(this).call();
     }
 
     @OnClick(R.id.container)
@@ -170,7 +170,7 @@ public class SampleActivity extends Activity {
         startActivity(intent);
     }
 
-    public static Callable createTestHdAsync(SampleActivity host) {
+    public static AsyncCallable createTestHdAsync(SampleActivity host) {
         return HdAsync.with(host)
                 .then(new AsyncAction(backgroundPool) {
                     @Override
@@ -273,7 +273,7 @@ public class SampleActivity extends Activity {
 
     public void test2(final IAsyncTest asyncTest) {
         Test3 test3 = new Test3();
-        Callable hdAsync3 = test3.test(asyncTest, backgroundLooper);
+        AsyncCallable hdAsync3 = test3.test(asyncTest, backgroundLooper);
 
         HdAsync.with(this)
                 .then(new AsyncAction(backgroundLooper) {
@@ -295,10 +295,10 @@ public class SampleActivity extends Activity {
 
 
     static class AsynTestClass implements IAsyncTest {
-        WeakReference<Callable> weakReference;
+        WeakReference<AsyncCallable> weakReference;
 
-        public AsynTestClass(Callable callable) {
-            this.weakReference = new WeakReference<Callable>(callable);
+        public AsynTestClass(AsyncCallable asyncCallable) {
+            this.weakReference = new WeakReference<AsyncCallable>(asyncCallable);
         }
 
         @Override
@@ -310,10 +310,10 @@ public class SampleActivity extends Activity {
 //                Log.d(HdAsync.TAG, "AsynTestClass onSuccess2");
 //                hdAsync.resume(10);
 //            }
-            Callable callable = weakReference.get();
-            if (callable != null) {
+            AsyncCallable asyncCallable = weakReference.get();
+            if (asyncCallable != null) {
                 Log.d(HdAsync.TAG, "AsynTestClass onSuccess2");
-                callable.resume(10);
+                asyncCallable.resume(10);
             }
         }
     }
