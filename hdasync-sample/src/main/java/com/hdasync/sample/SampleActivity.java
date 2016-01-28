@@ -96,51 +96,34 @@ public class SampleActivity extends Activity {
         super.onDestroy();
 
         if (hdAsync != null) {
-            asyncCallable.cancel();
+            asyncCallable.yield();
             asyncCallable.destroy();
         }
     }
 
-    /**
-     * step 0 初始化前  在主线程中  eg.可以pase intent等为初始化准备的工作
-     *
-     * @param savedInstanceState
-     */
+
     protected void beforeInitAtMainThread(Bundle savedInstanceState) {
 
     }
 
-    /**
-     * step 1 初始化 在主线程中 eg.设置界面 绑定ui控件
-     */
     protected void initAtMainThread() {
         initView();
     }
 
-    /**
-     * step 1 初始化 在后台线程中 eg.初始化service 从db读数据等
-     */
+
     protected void initAtBackgroundThread() {
         initDatas();
     }
 
-    /**
-     * step 2 初始化后 在主线程中 eg.可以在初始化完后刷新界面
-     */
+
     protected void afterInitAtMainThread() {
         //refresh
     }
 
-    /**
-     * step 2.5 从别的Activity回来 在主线程中
-     */
     protected void activityResultAtMainThread(int requestCode, int resultCode, Intent data) {
         //onActivityResult
     }
 
-    /**
-     * step 3 resume 在主线程中
-     */
     protected void resumeAtMainThread() {
 
     }
@@ -160,7 +143,7 @@ public class SampleActivity extends Activity {
 
     @OnClick(R.id.test)
     public void test() {
-        asyncCallable = createTestHdAsync(this).call();
+        asyncCallable = createTestAsyncCallable(this).call();
     }
 
     @OnClick(R.id.container)
@@ -170,7 +153,7 @@ public class SampleActivity extends Activity {
         startActivity(intent);
     }
 
-    public static AsyncCallable createTestHdAsync(SampleActivity host) {
+    public static AsyncCallable createTestAsyncCallable(SampleActivity host) {
         return HdAsync.with(host)
                 .then(new AsyncAction(backgroundPool) {
                     @Override
@@ -230,8 +213,8 @@ public class SampleActivity extends Activity {
 
                         SampleActivity activity = (SampleActivity) getHost();
                         if (activity != null && getCallable() != null) {
-                            activity.test2(new AsynTestClass(getCallable()));
-                            getCallable().cancel();
+                            activity.testWithOtherAsyncFunc(new OtherAsyncCallback(getCallable()));
+                            getCallable().yield();
                         }
 
                         return doNext(false);
@@ -271,15 +254,15 @@ public class SampleActivity extends Activity {
 
     }
 
-    public void test2(final IAsyncTest asyncTest) {
-        Test3 test3 = new Test3();
-        AsyncCallable hdAsync3 = test3.test(asyncTest, backgroundLooper);
+    public void testWithOtherAsyncFunc(final IOtherAsyncCallback otherAsyncCallback) {
+        OtherAsyncAction otherAsyncAction = new OtherAsyncAction();
+        AsyncCallable otherAsyncCallbale = OtherAsyncAction.createAsyncCallable(otherAsyncAction, otherAsyncCallback, backgroundLooper);
 
         HdAsync.with(this)
                 .then(new AsyncAction(backgroundLooper) {
                     @Override
                     public AsyncResult call(Object args) {
-                        Log.d(HdAsync.TAG, "test2 start");
+                        Log.d(HdAsync.TAG, "testWithOtherAsyncFunc start");
 
                         try {
                             Thread.sleep(2000);
@@ -289,30 +272,26 @@ public class SampleActivity extends Activity {
                         return doNext(true);
                     }
                 })
-                .append(hdAsync3)
+                .append(otherAsyncCallbale)
                 .call();
     }
 
 
-    static class AsynTestClass implements IAsyncTest {
+    static class OtherAsyncCallback implements IOtherAsyncCallback {
         WeakReference<AsyncCallable> weakReference;
 
-        public AsynTestClass(AsyncCallable asyncCallable) {
-            this.weakReference = new WeakReference<AsyncCallable>(asyncCallable);
+        public OtherAsyncCallback(AsyncCallable asyncCallable) {
+            this.weakReference = new WeakReference<>(asyncCallable);
         }
 
         @Override
         public void onSuccess() {
-            Log.d(HdAsync.TAG, "AsynTestClass onSuccess1");
+            Log.d(HdAsync.TAG, "OtherAsyncCallback onSuccess1");
 
-//            HdAsync hdAsync = weakReference.get();
-//            if (hdAsync != null) {
-//                Log.d(HdAsync.TAG, "AsynTestClass onSuccess2");
-//                hdAsync.resume(10);
-//            }
+
             AsyncCallable asyncCallable = weakReference.get();
             if (asyncCallable != null) {
-                Log.d(HdAsync.TAG, "AsynTestClass onSuccess2");
+                Log.d(HdAsync.TAG, "OtherAsyncCallback onSuccess2");
                 asyncCallable.resume(10);
             }
         }

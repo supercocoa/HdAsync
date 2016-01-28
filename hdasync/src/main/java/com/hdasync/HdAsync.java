@@ -12,5 +12,4 @@ public class HdAsync {
         return new AsyncCallable(host);
     }
 
-
 }

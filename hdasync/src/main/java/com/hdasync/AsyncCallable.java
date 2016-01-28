@@ -18,7 +18,7 @@ public class AsyncCallable {
     private Object host;
 
     private boolean isCalling = false;
-    private boolean isCanceled = false;
+    private boolean isYield = false;
     private boolean isDone = false;
 
     private static ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -31,7 +31,7 @@ public class AsyncCallable {
 
 
     public synchronized AsyncCallable call() {
-        isCanceled = false;
+        isYield = false;
         if (!isCalling) {
             isCalling = true;
             executeActionWithoutLock(null, true);
@@ -41,7 +41,7 @@ public class AsyncCallable {
     }
 
     public synchronized AsyncCallable call(Object args) {
-        isCanceled = false;
+        isYield = false;
         if (!isCalling) {
             isCalling = true;
             executeActionWithoutLock(args, true);
@@ -59,8 +59,8 @@ public class AsyncCallable {
         return this;
     }
 
-    public synchronized void cancel() {
-        isCanceled = true;
+    public synchronized void yield() {
+        isYield = true;
         isCalling = false;
     }
 
@@ -137,7 +137,7 @@ public class AsyncCallable {
     private void executeActionWithoutLock(final Object args, boolean needNext) {
         if (actionGroup != null && !actionGroup.allActionFinish()) {
 
-            if (!needNext || isCanceled) {
+            if (!needNext || isYield) {
                 return;
             }
 
